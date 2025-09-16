@@ -1,11 +1,8 @@
 package org.example;
 
 import org.example.hardware.CPU;
-import org.example.mmu.BaseAddressRegister;
-import org.example.mmu.LimitRegister;
 
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -14,7 +11,6 @@ public class ProcessControlBlock {
     private final int pid;
     private int baseAddress;
     private int limit;
-    private List<CPU.Register> registers;
 
     private ProcessState processState;
 
@@ -22,9 +18,6 @@ public class ProcessControlBlock {
 
     private ProcessControlBlock(int pid) {
         this.pid = pid;
-        registers = new ArrayList<CPU.Register>();
-        registers.add(new BaseAddressRegister(1024));
-        registers.add(new LimitRegister(1024));
         processState = ProcessState.READY;
     }
 
@@ -38,26 +31,27 @@ public class ProcessControlBlock {
     }
 
     /**
-     * 上下文切换
+     * 上下文切换-挂起
      */
     public void waitInContext(){
-        for (CPU.Register register : registers) {
-            if (register instanceof BaseAddressRegister) {
-                this.baseAddress = ((BaseAddressRegister) register).getBaseAddressKb();
-            } else if (register instanceof LimitRegister) {
-                this.limit = ((LimitRegister) register).getLimitKb();
-            }
-        }
+        // 寄存器
+        this.baseAddress = CPU.Register.BASE_ADDRESS.get();
+        this.limit = CPU.Register.LIMIT.get();
+        // TLB flush
+        CPU.TLB.flush();
+
     }
 
+    /**
+     * 上下文切换-恢复
+     */
     public void refresh(){
-        for (CPU.Register register : registers) {
-            if (register instanceof BaseAddressRegister) {
-                ((BaseAddressRegister) register).setBaseAddressKb(this.baseAddress);
-            } else if (register instanceof LimitRegister) {
-                ((LimitRegister) register).setLimitKb(this.limit);
-            }
-        }
+        // 寄存器
+
+        CPU.Register.LIMIT.set(limit);
+        CPU.Register.BASE_ADDRESS.set(baseAddress);
+
+
     }
 
     public int getPid() {
@@ -67,10 +61,6 @@ public class ProcessControlBlock {
     public List<PageTable> getPageTableEntries() {
         return pageTableEntries;
     }
-
-
-
-
 }
 
 enum ProcessState {

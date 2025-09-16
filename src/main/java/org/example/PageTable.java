@@ -1,18 +1,20 @@
 package org.example;
 
-import org.example.mmu.TranslationLookasideBuffer;
+
+
+import org.example.hardware.CPU;
 
 import java.util.List;
+
 
 public class PageTable {
     private List<PageTableEntry> pageTableEntries;
 
     private int getVirtualAddress (int virtualPageNumber, int offset) {
 
-        // TLB 是个寄存器，看看有无缓存命中
-        TranslationLookasideBuffer buffer = TranslationLookasideBuffer.INSTANCE;
-        if (buffer.lookup(virtualPageNumber) != null) {
-            return buffer.lookup(virtualPageNumber);
+        // TLB 看看有无缓存命中
+        if (CPU.TLB.lookup(virtualPageNumber) != null) {
+            return CPU.TLB.lookup(virtualPageNumber);
         }
 
         // RISC 指令集就是在这里写 这个时间复杂度很大，并且还需要一个额外的内存引用
@@ -20,7 +22,7 @@ public class PageTable {
                 p -> p.virtualPageNumber == virtualPageNumber
         ).findFirst().get().pageFrameNumber;
 
-        buffer.update(virtualPageNumber, pageFrameNumber);
+        CPU.TLB.update(virtualPageNumber, pageFrameNumber);
         return (pageFrameNumber << 4) | (offset & 0b1111);
     }
 

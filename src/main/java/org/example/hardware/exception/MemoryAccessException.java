@@ -1,4 +1,4 @@
-package org.example.exception;
+package org.example.hardware.exception;
 
 public class MemoryAccessException extends RuntimeException {
     public MemoryAccessException(String message) {
