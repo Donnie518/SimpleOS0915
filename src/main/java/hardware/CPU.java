@@ -3,9 +3,11 @@ package hardware;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-// 模拟 CPU
+/**
+ * CPU - 模拟
+  */
 public class CPU {
-    public static enum Register {
+    public enum Register {
         BASE_ADDRESS,
         LIMIT;
 
@@ -29,13 +31,15 @@ public class CPU {
     }
 
     public static class Cache {
-
+        public static byte[] allocate(int size) {
+            return new byte[size];
+        }
     }
 
     public static class TLB {
 
         // TLB数据存储
-        private static Map<Integer, Integer> tlbCache = new ConcurrentHashMap<>();
+        private static final Map<Integer, Integer> tlbCache = new ConcurrentHashMap<>();
 
         // TLB查找方法
         public static Integer lookup(int virtualPageNumber) {
