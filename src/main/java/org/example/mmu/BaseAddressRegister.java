@@ -1,6 +1,8 @@
 package org.example.mmu;
 
-public class BaseAddressRegister implements Register {
+import org.example.hardware.CPU;
+
+public class BaseAddressRegister extends CPU.Register {
     private int baseAddressKb;
 
 

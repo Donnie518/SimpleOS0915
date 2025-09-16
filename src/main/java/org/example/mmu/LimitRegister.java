@@ -1,6 +1,8 @@
 package org.example.mmu;
 
-public class LimitRegister implements Register{
+import org.example.hardware.CPU;
+
+public class LimitRegister extends CPU.Register {
     private int limitKb;
 
     public LimitRegister(int limitKb) {
