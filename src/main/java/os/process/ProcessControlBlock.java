@@ -1,6 +1,7 @@
-package org.example;
+package os.process;
 
-import org.example.hardware.CPU;
+import hardware.CPU;
+import os.memory.PageTable;
 
 
 import java.util.List;

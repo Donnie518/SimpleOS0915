@@ -1,4 +1,4 @@
-package org.example.hardware;
+package hardware;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

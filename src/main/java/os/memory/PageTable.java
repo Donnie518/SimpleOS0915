@@ -1,8 +1,8 @@
-package org.example;
+package os.memory;
 
 
 
-import org.example.hardware.CPU;
+import hardware.CPU;
 
 import java.util.List;
 

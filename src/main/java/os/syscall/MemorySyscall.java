@@ -1,6 +1,6 @@
-package org.example.syscall;
+package os.syscall;
 
-import org.example.ProcessControlBlock;
+import os.process.ProcessControlBlock;
 
 import java.io.*;
 
@@ -23,7 +23,7 @@ public class MemorySyscall extends Syscall{
         } catch (Exception e) {
             return -1;
         }
-
+        return 0;
     }
 
     public static void main(String[] args) {

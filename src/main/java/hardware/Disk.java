@@ -1,4 +1,4 @@
-package org.example.hardware;
+package hardware;
 
 public class Disk implements IODevice{
 }

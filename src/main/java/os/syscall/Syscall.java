@@ -1,4 +1,4 @@
-package org.example.syscall;
+package os.syscall;
 
 public abstract class Syscall {
     // 进程管理

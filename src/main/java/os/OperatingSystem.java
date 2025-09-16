@@ -1,4 +1,4 @@
-package org.example;
+package os;
 
 public class OperatingSystem {
 }

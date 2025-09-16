@@ -1,6 +1,6 @@
-package org.example.hardware;
+package hardware;
 
-import org.example.hardware.exception.MemoryAccessException;
+import hardware.exception.MemoryAccessException;
 public class Memory {
     public static class AddressTranslator {
         public int getRealAddressKb(int addressKb) throws MemoryAccessException {
