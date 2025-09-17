@@ -1,7 +1,9 @@
 package os.process;
 
 import hardware.CPU;
+import os.memory.MemoryManager;
 import os.memory.PageTable;
+import os.memory.VirtualMemoryManager;
 
 
 import java.util.List;
@@ -10,6 +12,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ProcessControlBlock {
     private static final AtomicInteger count = new AtomicInteger(0);
     private final int pid;
+    private int virtualAddress;
+
+    // 存寄存器的值
     private int baseAddress;
     private int limit;
 
@@ -17,18 +22,25 @@ public class ProcessControlBlock {
 
     private List<PageTable> pageTableEntries;
 
-    private ProcessControlBlock(int pid) {
+    private ProcessControlBlock(int pid, byte[] bytes) {
         this.pid = pid;
+        this.virtualAddress = allocate(bytes, pid);
         processState = ProcessState.READY;
     }
 
     public static ProcessControlBlock createProcess(byte[] bytes) {
-        int memoryP = allocate(bytes);
-        return new ProcessControlBlock(count.getAndIncrement());
+        int pid = count.getAndIncrement();
+        return new ProcessControlBlock(pid, bytes);
     }
 
-    private static int allocate(byte[] bytes) {
-        return 1;
+    /**
+     * 为进程分配虚拟内存
+     * @param bytes 程序数据
+     * @param pid 进程号
+     * @return 虚拟内存地址
+     */
+    private static int allocate(byte[] bytes, int pid) {
+        return VirtualMemoryManager.allocate(pid, bytes);
     }
 
     /**

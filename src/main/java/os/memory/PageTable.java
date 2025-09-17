@@ -10,7 +10,7 @@ import java.util.List;
 public class PageTable {
     private List<PageTableEntry> pageTableEntries;
 
-    private int getVirtualAddress (int virtualPageNumber, int offset) {
+    private int transToPhysicalAddress(int virtualPageNumber, int offset) {
 
         // TLB 看看有无缓存命中
         if (CPU.TLB.lookup(virtualPageNumber) != null) {
@@ -26,16 +26,11 @@ public class PageTable {
         return (pageFrameNumber << 4) | (offset & 0b1111);
     }
 
-    public int getVirtualAddress (int address) {
-        int lastFourBits = address & 0b1111;
-        int vpn = (address >>> 4) & 0b11;
-        return getVirtualAddress(vpn, lastFourBits);
+    public int getPhysicalAddress (int virtualAddress) {
+        int lastFourBits = virtualAddress & 0b1111;
+        int vpn = (virtualAddress >>> 4) & 0b11;
+        return transToPhysicalAddress(vpn, lastFourBits);
     }
 
 }
 
-class PageTableEntry {
-    int virtualPageNumber;
-
-    int pageFrameNumber;
-}
