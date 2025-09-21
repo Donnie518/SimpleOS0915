@@ -7,7 +7,6 @@ import java.io.*;
 
 public class MemorySyscall extends Syscall{
 
-
     /**
      * 进程创建
      * @return 进程号 pid
@@ -18,16 +17,10 @@ public class MemorySyscall extends Syscall{
         try (FileInputStream fis = new FileInputStream(file)) {
             byte[] data = new byte[(int) file.length()];
             fis.read(data);
-
-            ProcessControlBlock processControlBlock = ProcessControlBlock.createProcess(data);
+            return ProcessControlBlock.createProcess(data).getPid();
         } catch (Exception e) {
             return -1;
         }
-        return 0;
-    }
-
-    public static void main(String[] args) {
-
     }
 
     /**
