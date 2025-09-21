@@ -4,25 +4,29 @@ import hardware.CPU;
 import hardware.Disk;
 import hardware.Memory;
 import os.config.SystemConfig;
+import os.memory.strategy.ClockPageReplacement;
+import os.memory.strategy.PageReplacementStrategy;
 
 import java.util.*;
 
 public class VirtualMemoryManager {
 
-    private static final int pageSize = SystemConfig.PAGE_SIZE;
+    public static final int pageSize = SystemConfig.PAGE_SIZE;
 
     private static final BitSet allocatedPhysicalFrames = new BitSet(Memory.getPhysicalMemorySize() / pageSize);
+
+    private static final PageReplacementStrategy pageReplacementStrategy = new ClockPageReplacement();
     
     // 页面置换算法 - 简单时钟算法
-    private static final Map<Integer, PageFrameInfo> pageFrameTable = new HashMap<>();
-    private static int clockHand = 0; // 时钟指针
+    public static final Map<Integer, PageFrameInfo> pageFrameTable = new HashMap<>();
+
     
     // 页面置换信息
-    private static class PageFrameInfo {
-        int pid;                    // 所属进程ID
-        int virtualPageNumber;      // 虚拟页号
-        boolean referenced;         // 访问位
-        boolean modified;            // 修改位
+    public static class PageFrameInfo {
+        public int pid;                    // 所属进程ID
+        public int virtualPageNumber;      // 虚拟页号
+        public boolean referenced;         // 访问位
+        public boolean modified;            // 修改位
         
         PageFrameInfo(int pid, int virtualPageNumber) {
             this.pid = pid;
@@ -51,7 +55,7 @@ public class VirtualMemoryManager {
         
         // 如果空闲页框不够，触发页面置换
         while (allocatedFrames.size() < pageNeeded) {
-            int evictedFrame = pageReplacement();
+            int evictedFrame = pageReplacementStrategy.pageReplacement();
             if (evictedFrame == -1) {
                 // 页面置换失败，回滚已分配的页框
                 for (int frame : allocatedFrames) {
@@ -65,62 +69,11 @@ public class VirtualMemoryManager {
         return allocatedFrames;
     }
     
-    /**
-     * 页面置换算法 - 时钟算法
-     * @return 被置换的页框号，失败返回-1
-     */
-    private static int pageReplacement() {
-        int totalFrames = Memory.getPhysicalMemorySize() / pageSize;
-        int startHand = clockHand;
-        
-        // 扫描一圈寻找可置换的页面
-        do {
-            PageFrameInfo frameInfo = pageFrameTable.get(clockHand);
-            
-            if (frameInfo == null) {
-                // 该页框没有页面信息，可以直接使用
-                return clockHand;
-            }
-            
-            if (!frameInfo.referenced) {
-                // 找到可置换的页面
-                int evictedFrame = clockHand;
-                
-                // 如果页面被修改过，需要写回磁盘（模拟）
-                if (frameInfo.modified) {
-                    // 这里可以添加写回磁盘的逻辑
-                    System.out.println("页面 " + frameInfo.virtualPageNumber + " 被修改，写回磁盘");
-                }
-                
-                // 从原进程的页表中移除该页面
-                evictPageFromProcess(frameInfo.pid, frameInfo.virtualPageNumber);
-                
-                // 更新时钟指针
-                clockHand = (clockHand + 1) % totalFrames;
-                
-                return evictedFrame;
-            }
-            
-            // 清除访问位
-            frameInfo.referenced = false;
-            clockHand = (clockHand + 1) % totalFrames;
-            
-        } while (clockHand != startHand);
-        
-        // 如果所有页面都被访问过，强制置换第一个
-        PageFrameInfo frameInfo = pageFrameTable.get(startHand);
-        if (frameInfo != null) {
-            evictPageFromProcess(frameInfo.pid, frameInfo.virtualPageNumber);
-        }
-        
-        clockHand = (startHand + 1) % totalFrames;
-        return startHand;
-    }
-    
+
     /**
      * 从进程的页表中移除页面
      */
-    private static void evictPageFromProcess(int pid, int virtualPageNumber) {
+    public static void evictPageFromProcess(int pid, int virtualPageNumber) {
         PageTable pageTable = PageTable.getByPid(pid);
         if (pageTable != null && pageTable.pageTableEntries != null) {
             pageTable.pageTableEntries.removeIf(entry -> entry.virtualPageNumber == virtualPageNumber);
@@ -148,10 +101,10 @@ public class VirtualMemoryManager {
         
         // 从磁盘加载页面数据（模拟）
         byte[] pageData = loadPageFromDisk(pid, virtualPageNumber);
-        
+
         // 写入物理内存
         MemoryManager.write(frameNumber, pageData);
-        
+
         // 更新页表
         PageTable pageTable = PageTable.getByPid(pid);
         PageTableEntry newEntry = new PageTableEntry();
